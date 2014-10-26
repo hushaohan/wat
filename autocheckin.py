@@ -53,7 +53,7 @@ def attempt_check_in(ff):
     else:
         elms = ff.find_elements_by_xpath("//b[@class='icon tosign']")
         if len(elms) > 0:
-            elms.click()
+            elms[0].click()
             ff.implicitly_wait(3)
             elms = ff.find_elements_by_xpath("//b[@class='icon tosign done']")
             if len(elms) > 0:
@@ -76,7 +76,7 @@ def check_in_periodically():
         print current_time, 
         if ret == SUCCESSFULLY_CHECKED_IN:
             last_check_in_time = current_time
-            open(last_check_in_time, 'w').write(str(last_check_in_time))
+            open(last_check_in_file, 'w').write(str(last_check_in_time))
             print 'SUCCESSFULLY_CHECKED_IN'
         elif ret == ALREADY_CHECKED_IN:
             print 'ALREADY_CHECKED_IN'

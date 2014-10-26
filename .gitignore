@@ -4,5 +4,6 @@ Thumbs.db
 *.swp
 Icon*
 .dropbox
-last.txt
+*.txt
 *.pyc
+*.out
