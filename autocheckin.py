@@ -1,12 +1,11 @@
 #! /usr/bin/env python2.7
 
-import os, sys
+import os, sys, smtplib
 from time import time, sleep
 from selenium import webdriver as wd
-import smtplib
 from email.mime.text import MIMEText
 from selenium.webdriver.common.by import By
-
+from pyvirtualdisplay import Display
 
 SUCCESSFULLY_CHECKED_IN = 0
 ALREADY_CHECKED_IN = 1
@@ -16,6 +15,7 @@ last_check_in_file = 'last.txt'
 attempt_check_in_period = 3600 * 3          # seconds
 check_in_status_stuck_threshold = 24 + 1    # hours
 check_in_error_time_threshold = 12          # hours
+
 
 def send_email(msg_content):
     msg = MIMEText(msg_content)
@@ -29,7 +29,7 @@ def send_email(msg_content):
     s.quit()
 
 
-def open_and_login_xiami_in_firefox(email, password):
+def login_xiami_and_attempt_check_in(email, password):
     profile = wd.FirefoxProfile()
     profile.add_extension(extension='unblock-youku.xpi')
     profile.set_preference('network.proxy.type', 2); 
@@ -43,13 +43,10 @@ def open_and_login_xiami_in_firefox(email, password):
     except Exception:
         print 'time out'
         pass
-    return ff
 
-
-def attempt_check_in(ff):
     elms = ff.find_elements_by_xpath("//b[@class='icon tosign done']")
     if len(elms) > 0:
-        return ALREADY_CHECKED_IN
+        status = ALREADY_CHECKED_IN
     else:
         elms = ff.find_elements_by_xpath("//b[@class='icon tosign']")
         if len(elms) > 0:
@@ -57,12 +54,13 @@ def attempt_check_in(ff):
             ff.implicitly_wait(3)
             elms = ff.find_elements_by_xpath("//b[@class='icon tosign done']")
             if len(elms) > 0:
-                return SUCCESSFULLY_CHECKED_IN
+                status = SUCCESSFULLY_CHECKED_IN
             else:
-                return ERROR_WITH_CHECK_IN
+                status = ERROR_WITH_CHECK_IN
         else:
-            return ERROR_WITH_CHECK_IN
-            
+            status = ERROR_WITH_CHECK_IN
+    ff.close()
+    return status
 
 def check_in_periodically():
     if not os.path.exists(last_check_in_file):
@@ -70,15 +68,17 @@ def check_in_periodically():
     else:
         last_check_in_time = float(open(last_check_in_file).read().strip())
     while True:
-        ff = open_and_login_xiami_in_firefox(email, password)
-        ret = attempt_check_in(ff)
+        display = Display(visible=0, size=(800, 600))
+        display.start()
+        status = login_xiami_and_attempt_check_in(email, password)
+        display.stop()
         current_time = time()
         print current_time, 
-        if ret == SUCCESSFULLY_CHECKED_IN:
+        if status == SUCCESSFULLY_CHECKED_IN:
             last_check_in_time = current_time
             open(last_check_in_file, 'w').write(str(last_check_in_time))
             print 'SUCCESSFULLY_CHECKED_IN'
-        elif ret == ALREADY_CHECKED_IN:
+        elif status == ALREADY_CHECKED_IN:
             print 'ALREADY_CHECKED_IN'
             if current_time - last_check_in_time >= 3600 * check_in_status_stuck_threshold:
                 sendmail('Xiami check in status stuck for the past %d hours' % check_in_status_stuck_threshold)
@@ -86,7 +86,6 @@ def check_in_periodically():
             print 'ERROR_WITH_CHECK_IN'
             if current_time - last_check_in_time >= 3600 * check_in_error_time_threshold:
                 sendmail('Xiami check in problems for the past %d hours' % check_in_error_time_threshold)
-        ff.close()
         sleep(attempt_check_in_period)
 
 
@@ -98,4 +97,3 @@ if __name__ == '__main__':
         email = sys.argv[1]
         password = sys.argv[2]
     check_in_periodically()
-    
