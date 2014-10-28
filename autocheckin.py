@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 
-import os, sys, smtplib
+import os, smtplib, getpass
+from datetime import datetime
 from time import time, sleep
 from selenium import webdriver as wd
 from email.mime.text import MIMEText
@@ -17,16 +18,14 @@ check_in_status_stuck_threshold = 24 + 1    # hours
 check_in_error_time_threshold = 12          # hours
 
 
-def send_email(msg_content):
+def send_email(me, you, msg_content):
     msg = MIMEText(msg_content)
-    me = 'hushaohan@gmail.com'
-    you = 'hushaohan@gmail.com'
     msg['Subject'] = msg_content
     msg['From'] = me
     msg['To'] = you
-    s = smtplib.SMTP('localhost')
-    s.sendmail(me, [you], msg.as_string())
-    s.quit()
+    sender = smtplib.SMTP('localhost')
+    sender.sendmail(me, [you], msg.as_string())
+    sender.quit()
 
 
 def login_xiami_and_attempt_check_in(email, password):
@@ -62,38 +61,35 @@ def login_xiami_and_attempt_check_in(email, password):
     ff.close()
     return status
 
-def check_in_periodically():
+
+def check_in_periodically(email, password):
     if not os.path.exists(last_check_in_file):
         last_check_in_time = time()
     else:
-        last_check_in_time = float(open(last_check_in_file).read().strip())
+        last_check_in_time = float(open(last_check_in_file).readlines()[0].strip())
     while True:
         display = Display(visible=0, size=(800, 600))
         display.start()
         status = login_xiami_and_attempt_check_in(email, password)
         display.stop()
         current_time = time()
-        print current_time, 
+        print current_time, datetime.fromtimestamp(current_time).strftime('%Y-%m-%d_%H:%M:%S'), 
         if status == SUCCESSFULLY_CHECKED_IN:
             last_check_in_time = current_time
-            open(last_check_in_file, 'w').write(str(last_check_in_time))
+            open(last_check_in_file, 'w').write(str(last_check_in_time) + '\n' + datetime.fromtimestamp(last_check_in_time).strftime('%Y-%m-%d_%H:%M:%S'))
             print 'SUCCESSFULLY_CHECKED_IN'
         elif status == ALREADY_CHECKED_IN:
             print 'ALREADY_CHECKED_IN'
             if current_time - last_check_in_time >= 3600 * check_in_status_stuck_threshold:
-                sendmail('Xiami check in status stuck for the past %d hours' % check_in_status_stuck_threshold)
+                send_email(email, email, 'Xiami check in status stuck for the past %d hours' % check_in_status_stuck_threshold)
         else:
             print 'ERROR_WITH_CHECK_IN'
             if current_time - last_check_in_time >= 3600 * check_in_error_time_threshold:
-                sendmail('Xiami check in problems for the past %d hours' % check_in_error_time_threshold)
+                send_email(email, email, 'Xiami check in problems for the past %d hours' % check_in_error_time_threshold)
         sleep(attempt_check_in_period)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) <= 2:
-        print 'Xiami account email and password required!'
-        exit(1)
-    else:
-        email = sys.argv[1]
-        password = sys.argv[2]
-    check_in_periodically()
+    email = raw_input('User:').lower()
+    password = getpass.getpass('Pass:')
+    check_in_periodically(email, password)
