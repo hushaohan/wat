@@ -6,11 +6,11 @@ from time import time, sleep
 from selenium import webdriver as wd
 from email.mime.text import MIMEText
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from pyvirtualdisplay import Display
 from Tkinter import *
 from enum import Enum
 from config import *
-
 
 class Status(Enum):
     ERROR_WITH_CHECK_IN = -1
@@ -32,7 +32,7 @@ def login_xiami_and_attempt_check_in(email, password):
     profile = wd.FirefoxProfile()
     profile.add_extension(extension='unblock-youku.xpi')
     profile.set_preference('network.proxy.type', 2);
-    ff = wd.Firefox(profile)
+    ff = wd.Firefox(profile, firefox_binary=FirefoxBinary(FIREFOX_BINARY_PATH))
     ff.get('https://login.xiami.com/member/login')
     ff.find_element_by_id('email').send_keys(email)
     ff.find_element_by_id('password').send_keys(password + '\n')
