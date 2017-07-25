@@ -1,6 +1,6 @@
 FIREFOX_BINARY_PATH = '/home/shu17/bin/firefox/firefox-bin'
 
-UNEXPECTED_ERROR_COUNT_THRESHOLD    = 2
+UNEXPECTED_ERROR_COUNT_THRESHOLD = 2
 SHOW_GUI = False
 KEYRING_SERVICE = 'xiami_auto_checkin'
 

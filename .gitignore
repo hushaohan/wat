@@ -7,3 +7,4 @@ Icon*
 *.txt
 *.pyc
 *.out
+geckodriver.log

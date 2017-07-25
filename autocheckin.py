@@ -34,8 +34,9 @@ def login_xiami_and_attempt_check_in(email, password):
     profile.set_preference('network.proxy.type', 2);
     ff = wd.Firefox(profile, firefox_binary=FirefoxBinary(FIREFOX_BINARY_PATH))
     ff.get('https://login.xiami.com/member/login')
-    ff.find_element_by_id('email').send_keys(email)
-    ff.find_element_by_id('password').send_keys(password + '\n')
+    ff.find_elements_by_id("J_LoginSwitch")[0].click()
+    ff.find_element_by_id('account').send_keys(email)
+    ff.find_element_by_id('pw').send_keys(password + '\n')
     try:
         while ff.current_url.find('login') >= 0:
             ff.implicitly_wait(3)
@@ -115,7 +116,7 @@ def prompt_user_for_account_info():
     pass_entry.bind('<Return>', get_account_info)
     user_entry.grid(row=0, column=1)
     pass_entry.grid(row=1, column=1)
-    
+
     if email == None:
         user_entry.focus_set()
     else:
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         email = sys.argv[1].lower()
     if len(sys.argv) > 2:
         password = sys.argv[2]
-    
+
     if email == None:
         print 'Prompting user for account email and password!'
         prompt_user_for_account_info()
