@@ -95,6 +95,13 @@ def check_in_periodically(email, password, headless):
         sleep(attempt_check_in_period)
 
 
+def prompt_user_for_account_info(email):
+    import tkinter
+    import tkinter.simpledialog
+    tkinter.Tk().withdraw()
+    return tkinter.simpledialog.askstring('Password', 'Xiami password for {}:'.format(email), show='*')
+
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -106,55 +113,21 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
 def cli(email, password_now, headless):
-    password = None
-
-    def prompt_user_for_account_info():
-        from tkinter import Tk, Label, Entry, mainloop
-
-        def get_account_info(evt):
-            nonlocal email, password
-            email = user_entry.get()
-            password = pass_entry.get()
-            root.destroy()
-
-        root = Tk()
-        root.wm_title('Xiami Account Info')
-        Label(root, text="Username").grid(row=0)
-        Label(root, text="Password").grid(row=1)
-
-        user_entry = Entry(root)
-        pass_entry = Entry(root, show='*')
-        pass_entry.bind('<Return>', get_account_info)
-        user_entry.grid(row=0, column=1)
-        pass_entry.grid(row=1, column=1)
-
-        if email == None:
-            user_entry.focus_set()
-        else:
-            user_entry.insert(0, email)
-            pass_entry.focus_set()
-        mainloop()
-
-    if email == None:
-        print('Prompting user for account email and password!')
-        prompt_user_for_account_info()
-        keyring.set_password(KEYRING_SERVICE, email, password)
-    else:
-        password = keyring.get_password(KEYRING_SERVICE, email)
-        if password == None:
-            if password_now:
-                print('Prompting user {} to enter password now:'.format(email))
-                password = getpass.getpass(prompt='Password: ', stream=None)
-                if os.fork():
-                    sys.exit()
-            else:
-                print('Prompting user {} to enter password any time.'.format(email))
-                prompt_user_for_account_info()
-                keyring.set_password(KEYRING_SERVICE, email, password)
-        else:
-            print('Password for {} retrieved from keyring!'.format(email))
+    password = keyring.get_password(KEYRING_SERVICE, email)
+    if password == None:
+        if password_now:
+            print('Prompting user {} to enter password now:'.format(email))
+            password = getpass.getpass(prompt='Password: ', stream=None)
             if os.fork():
                 sys.exit()
+        else:
+            print('Prompting user {} to enter password any time.'.format(email))
+            password = prompt_user_for_account_info(email)
+            keyring.set_password(KEYRING_SERVICE, email, password)
+    else:
+        print('Password for {} retrieved from keyring!'.format(email))
+        if os.fork():
+            sys.exit()
     check_in_periodically(email, password, headless)
 
 
