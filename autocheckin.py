@@ -34,8 +34,8 @@ def send_email(me, you, msg_content):
 
 def login_xiami_and_attempt_check_in(email, password):
     profile = wd.FirefoxProfile()
-    profile.add_extension(extension='unblock-youku.xpi')
-    profile.set_preference('network.proxy.type', 2)
+    # profile.add_extension(extension='unblock-youku.xpi')
+    # profile.set_preference('network.proxy.type', 2)
     FIREFOX_BINARY_PATH = None
     if sys.platform.find('darwin') == 0:
         FIREFOX_BINARY_PATH = FIREFOX_BINARY_PATH_OSX
@@ -56,6 +56,7 @@ def login_xiami_and_attempt_check_in(email, password):
     except Exception:
         print 'timed out trying to open login page'
         pass
+    ff.implicitly_wait(3)
     elms = ff.find_elements_by_xpath("//b[@class='icon tosign done']")
     if len(elms) > 0:
         status = Status.ALREADY_CHECKED_IN
