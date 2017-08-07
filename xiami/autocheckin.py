@@ -109,7 +109,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--email', '-e', type=str, default='hushaohan@gmail.com',
               help='Xiami account email address')
 @click.option('--password-now/--no-password-now', default=True,
-              help='If now (should be run in foreground), prompt user on cmd-line for password now; otherwise (should be run in background), open a gui password prompt that can be filled later.')
+              help='If now, prompt user on cmd-line for password now (thus, should not be run in background); otherwise, open a gui password prompt that can be filled later.')
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
 def cli(email, password_now, headless):
@@ -118,16 +118,12 @@ def cli(email, password_now, headless):
         if password_now:
             print('Prompting user {} to enter password now:'.format(email))
             password = getpass.getpass(prompt='Password: ', stream=None)
-            if os.fork():
-                sys.exit()
         else:
             print('Prompting user {} to enter password any time.'.format(email))
             password = prompt_user_for_account_info(email)
             keyring.set_password(KEYRING_SERVICE, email, password)
     else:
         print('Password for {} retrieved from keyring!'.format(email))
-        if os.fork():
-            sys.exit()
     check_in_periodically(email, password, headless)
 
 
