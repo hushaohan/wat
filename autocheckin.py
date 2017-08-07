@@ -33,30 +33,20 @@ def send_email(me, you, msg_content):
 
 
 def login_xiami_and_attempt_check_in(email, password):
-    profile = wd.FirefoxProfile()
-    # profile.add_extension(extension='unblock-youku.xpi')
-    # profile.set_preference('network.proxy.type', 2)
-    FIREFOX_BINARY_PATH = None
-    if sys.platform.find('darwin') == 0:
-        FIREFOX_BINARY_PATH = FIREFOX_BINARY_PATH_OSX
-    elif sys.platform.find('linux') == 0:
-        FIREFOX_BINARY_PATH = FIREFOX_BINARY_PATH_LINUX
-    else:
-        print 'Firefox not found, exiting...'
-        exit(-1)
-    ff = wd.Firefox(profile, firefox_binary=FirefoxBinary(FIREFOX_BINARY_PATH))
-    ff.get('https://login.xiami.com/member/login')
+    ff = wd.Firefox()
+    ff.get(XIAMI_LOGIN_URL)
     ff.find_elements_by_id("J_LoginSwitch")[0].click()
     ff.find_element_by_id('account').send_keys(email)
     ff.find_element_by_id('pw').send_keys(password)
     ff.find_element_by_id('submit').click()
+
     try:
-        while ff.current_url.find('login') >= 0:
+        while not ff.find_elements_by_xpath("//b[@class='icon tosign done']") and not ff.find_elements_by_xpath("//b[@class='icon tosign']"):
             ff.implicitly_wait(3)
     except Exception:
-        print 'timed out trying to open login page'
+        print 'timed out trying to log in'
         pass
-    ff.implicitly_wait(3)
+
     elms = ff.find_elements_by_xpath("//b[@class='icon tosign done']")
     if len(elms) > 0:
         status = Status.ALREADY_CHECKED_IN
