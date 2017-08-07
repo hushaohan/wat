@@ -95,34 +95,6 @@ def check_in_periodically(email, password, headless):
         sleep(attempt_check_in_period)
 
 
-def prompt_user_for_account_info():
-    from Tkinter import Tk, Label, Entry, mainloop
-
-    def get_account_info(evt):
-        global email, password
-        email = user_entry.get()
-        password = pass_entry.get()
-        root.destroy()
-
-    root = Tk()
-    root.wm_title('Xiami Account Info')
-    Label(root, text="Username").grid(row=0)
-    Label(root, text="Password").grid(row=1)
-
-    user_entry = Entry(root)
-    pass_entry = Entry(root, show='*')
-    pass_entry.bind('<Return>', get_account_info)
-    user_entry.grid(row=0, column=1)
-    pass_entry.grid(row=1, column=1)
-
-    if email == None:
-        user_entry.focus_set()
-    else:
-        user_entry.insert(0, email)
-        pass_entry.focus_set()
-    mainloop()
-
-
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -130,10 +102,39 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--email', '-e', type=str, default='hushaohan@gmail.com',
               help='Xiami account email address')
 @click.option('--password-now/--no-password-now', default=True,
-              help='If now, prompt user on cmd-line for password now; otherwise, open a gui password prompt that can be filled later.')
+              help='If now (should be run in foreground), prompt user on cmd-line for password now; otherwise (should be run in background), open a gui password prompt that can be filled later.')
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
 def cli(email, password_now, headless):
+    password = None
+
+    def prompt_user_for_account_info():
+        from tkinter import Tk, Label, Entry, mainloop
+
+        def get_account_info(evt):
+            nonlocal email, password
+            email = user_entry.get()
+            password = pass_entry.get()
+            root.destroy()
+
+        root = Tk()
+        root.wm_title('Xiami Account Info')
+        Label(root, text="Username").grid(row=0)
+        Label(root, text="Password").grid(row=1)
+
+        user_entry = Entry(root)
+        pass_entry = Entry(root, show='*')
+        pass_entry.bind('<Return>', get_account_info)
+        user_entry.grid(row=0, column=1)
+        pass_entry.grid(row=1, column=1)
+
+        if email == None:
+            user_entry.focus_set()
+        else:
+            user_entry.insert(0, email)
+            pass_entry.focus_set()
+        mainloop()
+
     if email == None:
         print('Prompting user for account email and password!')
         prompt_user_for_account_info()
@@ -144,15 +145,16 @@ def cli(email, password_now, headless):
             if password_now:
                 print('Prompting user {} to enter password now:'.format(email))
                 password = getpass.getpass(prompt='Password: ', stream=None)
+                if os.fork():
+                    sys.exit()
             else:
                 print('Prompting user {} to enter password any time.'.format(email))
                 prompt_user_for_account_info()
                 keyring.set_password(KEYRING_SERVICE, email, password)
         else:
             print('Password for {} retrieved from keyring!'.format(email))
-            pass
-    if os.fork():
-        sys.exit()
+            if os.fork():
+                sys.exit()
     check_in_periodically(email, password, headless)
 
 
