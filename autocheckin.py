@@ -1,16 +1,19 @@
 #! /usr/bin/env python2.7
 
-import os, smtplib, getpass, sys, keyring
+import os
+import smtplib
+import getpass
+import sys
+import keyring
 from datetime import datetime
 from time import time, sleep
 from selenium import webdriver as wd
 from email.mime.text import MIMEText
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from pyvirtualdisplay import Display
-from Tkinter import *
 from enum import Enum
 from config import *
+
 
 class Status(Enum):
     ERROR_WITH_CHECK_IN = -1
@@ -23,6 +26,7 @@ def send_email(me, you, msg_content):
     msg['Subject'] = msg_content
     msg['From'] = me
     msg['To'] = you
+    print 'mail'
     sender = smtplib.SMTP('localhost')
     sender.sendmail(me, [you], msg.as_string())
     sender.quit()
@@ -31,12 +35,21 @@ def send_email(me, you, msg_content):
 def login_xiami_and_attempt_check_in(email, password):
     profile = wd.FirefoxProfile()
     profile.add_extension(extension='unblock-youku.xpi')
-    profile.set_preference('network.proxy.type', 2);
+    profile.set_preference('network.proxy.type', 2)
+    FIREFOX_BINARY_PATH = None
+    if sys.platform.find('darwin') == 0:
+        FIREFOX_BINARY_PATH = FIREFOX_BINARY_PATH_OSX
+    elif sys.platform.find('linux') == 0:
+        FIREFOX_BINARY_PATH = FIREFOX_BINARY_PATH_LINUX
+    else:
+        print 'Firefox not found, exiting...'
+        exit(-1)
     ff = wd.Firefox(profile, firefox_binary=FirefoxBinary(FIREFOX_BINARY_PATH))
     ff.get('https://login.xiami.com/member/login')
     ff.find_elements_by_id("J_LoginSwitch")[0].click()
     ff.find_element_by_id('account').send_keys(email)
-    ff.find_element_by_id('pw').send_keys(password + '\n')
+    ff.find_element_by_id('pw').send_keys(password)
+    ff.find_element_by_id('submit').click()
     try:
         while ff.current_url.find('login') >= 0:
             ff.implicitly_wait(3)
@@ -71,6 +84,7 @@ def check_in_periodically(email, password):
     while True:
         try:
             if not SHOW_GUI:
+                from pyvirtualdisplay import Display
                 display = Display(visible=0, size=(800, 600))
                 display.start()
             status = login_xiami_and_attempt_check_in(email, password)
@@ -99,6 +113,7 @@ def check_in_periodically(email, password):
 
 
 def prompt_user_for_account_info():
+    from Tkinter import Tk, Label, Entry, mainloop
 
     def get_account_info(evt):
         global email, password

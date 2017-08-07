@@ -1,5 +1,5 @@
-FIREFOX_BINARY_PATH = '/home/shu17/bin/firefox/firefox-bin'
-
+FIREFOX_BINARY_PATH_LINUX = '/home/shu17/bin/firefox/firefox-bin'
+FIREFOX_BINARY_PATH_OSX = '/Applications/Firefox.app/Contents/MacOS/firefox-bin'
 UNEXPECTED_ERROR_COUNT_THRESHOLD = 2
 SHOW_GUI = False
 KEYRING_SERVICE = 'xiami_auto_checkin'
