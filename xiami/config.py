@@ -1,7 +1,7 @@
-UNEXPECTED_ERROR_COUNT_THRESHOLD = 2
+MAX_WEBDRIVER_LOADING_WAIT_ROUNDS = 3
+WEBDRIVER_LOADING_WAIT_TIME = 3
 KEYRING_SERVICE = 'xiami_auto_checkin'
 XIAMI_LOGIN_URL = 'https://login.xiami.com/member/login'
-last_check_in_file = 'data/last.txt'
-attempt_check_in_period = 3600 * 3          # seconds
-check_in_status_stuck_threshold = 24 + 1    # hours
-check_in_error_time_threshold = 12          # hours
+LAST_CHECK_IN_FILE = 'data/last.txt'
+CHECK_IN_STATUS_STUCK_THRESHOLD = 3600 * (24 + 6)  # seconds
+CHECK_IN_ERROR_TIME_THRESHOLD = 3600 * 12  # seconds

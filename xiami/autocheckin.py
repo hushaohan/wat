@@ -8,15 +8,17 @@ from datetime import datetime
 from time import time, sleep
 from selenium import webdriver
 from email.mime.text import MIMEText
-from selenium.webdriver.common.by import By
-from enum import Enum
+from enum import Enum, auto
 from . config import *
 
 
 class Status(Enum):
-    ERROR_WITH_CHECK_IN = -1
-    SUCCESSFULLY_CHECKED_IN = 0
-    ALREADY_CHECKED_IN = 1
+    UNEXPECTED_ERROR_WITH_CHECKIN = auto()
+    ERROR_WITH_CHECKIN = auto()
+    ERROR_WITH_LOGIN = auto()
+    TIMED_OUT_DURING_LOGIN = auto()
+    SUCCESSFULLY_CHECKED_IN = auto()
+    ALREADY_CHECKED_IN = auto()
 
 
 def send_email(me, you, msg_content):
@@ -30,6 +32,17 @@ def send_email(me, you, msg_content):
     sender.quit()
 
 
+def wait_for_any_elements_to_load(wd, elms):
+    rounds = 0
+    while rounds < MAX_WEBDRIVER_LOADING_WAIT_ROUNDS:
+        wd.implicitly_wait(WEBDRIVER_LOADING_WAIT_TIME)
+        for elm in elms:
+            if wd.find_elements_by_xpath(elm):
+                return True
+        rounds += 1
+    return False
+
+
 def login_xiami_and_attempt_check_in(wd, email, password):
     wd.get(XIAMI_LOGIN_URL)
     wd.find_elements_by_id("J_LoginSwitch")[0].click()
@@ -38,61 +51,56 @@ def login_xiami_and_attempt_check_in(wd, email, password):
     wd.find_element_by_id('submit').click()
 
     try:
-        while not wd.find_elements_by_xpath("//b[@class='icon tosign done']") and not wd.find_elements_by_xpath("//b[@class='icon tosign']"):
-            wd.implicitly_wait(3)
+        if not wait_for_any_elements_to_load(wd, ["//b[@class='icon tosign done']", "//b[@class='icon tosign']"]):
+            return Status.ERROR_WITH_LOGIN
     except Exception:
-        print('timed out trying to log in')
-        pass
+        return Status.TIMED_OUT_DURING_LOGIN
 
-    elms = wd.find_elements_by_xpath("//b[@class='icon tosign done']")
-    if len(elms) > 0:
-        status = Status.ALREADY_CHECKED_IN
+    if wd.find_elements_by_xpath("//b[@class='icon tosign done']"):
+        return Status.ALREADY_CHECKED_IN
     else:
-        elms = wd.find_elements_by_xpath("//b[@class='icon tosign']")
-        if len(elms) > 0:
-            elms[0].click()
-            wd.implicitly_wait(3)
-            elms = wd.find_elements_by_xpath("//b[@class='icon tosign done']")
-            if len(elms) > 0:
-                status = Status.SUCCESSFULLY_CHECKED_IN
+        elms_tosign = wd.find_elements_by_xpath("//b[@class='icon tosign']")
+        if len(elms_tosign) > 0:
+            elms_tosign[0].click()
+            if wait_for_any_elements_to_load(wd, ["//b[@class='icon tosign done']"]):
+                return Status.SUCCESSFULLY_CHECKED_IN
             else:
-                status = Status.ERROR_WITH_CHECK_IN
+                return Status.ERROR_WITH_CHECKIN
         else:
-            status = Status.ERROR_WITH_CHECK_IN
-    wd.close()
-    return status
+            return Status.UNEXPECTED_ERROR_WITH_CHECKIN
 
 
-def check_in_periodically(email, password, headless):
-    if not os.path.exists(last_check_in_file):
+def format_time(t):
+    return datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
+
+
+def check_in_periodically(email, password, period, headless):
+    if not os.path.exists(LAST_CHECK_IN_FILE):
         last_check_in_time = time()
     else:
-        last_check_in_time = float(open(last_check_in_file).readlines()[0].strip())
-    unexpected_error_count = 0
+        with open(LAST_CHECK_IN_FILE) as f:
+            last_check_in_time = float(f.readlines()[0].strip())
     while True:
         try:
             wd = webdriver.PhantomJS() if headless else webdriver.Firefox()
             status = login_xiami_and_attempt_check_in(wd, email, password)
+            wd.close()
             current_time = time()
-            print('{} {}'.format(current_time, datetime.fromtimestamp(current_time).strftime('%Y-%m-%d_%H:%M:%S')), end=' ')
+            print('{} {} {}'.format(current_time, format_time(current_time), status))
             if status == Status.SUCCESSFULLY_CHECKED_IN:
                 last_check_in_time = current_time
-                open(last_check_in_file, 'w').write(str(last_check_in_time) + '\n' + datetime.fromtimestamp(last_check_in_time).strftime('%Y-%m-%d_%H:%M:%S'))
-                print('SUCCESSFULLY_CHECKED_IN')
+                with open(LAST_CHECK_IN_FILE, 'w') as f:
+                    f.write('{}\n{}'.format(last_check_in_time, format_time(last_check_in_time)))
             elif status == Status.ALREADY_CHECKED_IN:
-                print('ALREADY_CHECKED_IN')
-                if current_time - last_check_in_time >= 3600 * check_in_status_stuck_threshold:
-                    send_email(email, email, 'Xiami check in status stuck for the past %d hours' % check_in_status_stuck_threshold)
+                if current_time - last_check_in_time >= CHECK_IN_STATUS_STUCK_THRESHOLD:
+                    send_email(email, email, 'Xiami checkin status might be stuck!')
             else:
-                print('ERROR_WITH_CHECK_IN')
-                if current_time - last_check_in_time >= 3600 * check_in_error_time_threshold:
-                    send_email(email, email, 'Xiami check in problems for the past %d hours' % check_in_error_time_threshold)
+                if current_time - last_check_in_time >= CHECK_IN_ERROR_TIME_THRESHOLD:
+                    send_email(email, email, 'Xiami checkin encountered error: {}'.format(status))
         except:
-            print('UNEXPECTED_ERROR_WITH_CHECK_IN {}'.format(sys.exc_info()))
-            unexpected_error_count += 1
-            if unexpected_error_count >= UNEXPECTED_ERROR_COUNT_THRESHOLD:
-                send_email(email, email, 'Xiami check in unexpected error!\n' + str(sys.exc_info()))
-        sleep(attempt_check_in_period)
+            print('FATAL_ERROR: {}'.format(sys.exc_info()))
+            send_email(email, email, 'Xiami checkin fatal error: {}'.format(sys.exc_info()))
+        sleep(3600 * period)
 
 
 def prompt_user_for_account_info(email):
@@ -109,10 +117,13 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--email', '-e', type=str, default='hushaohan@gmail.com',
               help='Xiami account email address')
 @click.option('--password-now/--no-password-now', default=True,
-              help='If now, prompt user on cmd-line for password now (thus, should not be run in background); otherwise, open a gui password prompt that can be filled later.')
+              help='''If now, prompt user on cmd-line for password now (thus, should not be run in background)
+                      otherwise, open a gui password prompt that can be filled later.''')
+@click.option('--period', '-p', type=int, default=6,
+              help='Checkin attempt period (in hours)')
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
-def cli(email, password_now, headless):
+def cli(email, password_now, period, headless):
     password = keyring.get_password(KEYRING_SERVICE, email)
     if password == None:
         if password_now:
@@ -124,7 +135,7 @@ def cli(email, password_now, headless):
             keyring.set_password(KEYRING_SERVICE, email, password)
     else:
         print('Password for {} retrieved from keyring!'.format(email))
-    check_in_periodically(email, password, headless)
+    check_in_periodically(email, password, period, headless)
 
 
 if __name__ == '__main__':
