@@ -5,3 +5,4 @@ XIAMI_LOGIN_URL = 'https://login.xiami.com/member/login'
 LAST_CHECK_IN_FILE = 'last.txt'
 CHECK_IN_STATUS_STUCK_THRESHOLD = 3600 * (24 + 6)  # seconds
 CHECK_IN_ERROR_TIME_THRESHOLD = 3600 * 12  # seconds
+DEFAULT_CHECKIN_ATTEMPT_PERIOD = 6 # hours

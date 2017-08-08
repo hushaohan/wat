@@ -119,7 +119,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--password-now/--no-password-now', default=True,
               help='''If now, prompt user on cmd-line for password (thus, should not be run in background);
                       otherwise, open a gui password prompt that can be filled later.''')
-@click.option('--period', '-p', type=int, default=6,
+@click.option('--period', '-p', type=int, default=DEFAULT_CHECKIN_ATTEMPT_PERIOD,
               help='Checkin attempt period (in hours)')
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
