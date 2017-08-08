@@ -103,7 +103,7 @@ def check_in_periodically(email, password, period, headless):
         sleep(3600 * period)
 
 
-def prompt_user_for_account_info(email):
+def prompt_user_for_password(email):
     import tkinter
     import tkinter.simpledialog
     tkinter.Tk().withdraw()
@@ -131,8 +131,9 @@ def cli(email, password_now, period, headless):
             password = getpass.getpass(prompt='Password: ', stream=None)
         else:
             print('Prompting user {} to enter password any time.'.format(email))
-            password = prompt_user_for_account_info(email)
-            keyring.set_password(KEYRING_SERVICE, email, password)
+            password = prompt_user_for_password(email)
+        keyring.set_password(KEYRING_SERVICE, email, password)
+        print('Password for {} saved in keyring!'.format(email))
     else:
         print('Password for {} retrieved from keyring!'.format(email))
     check_in_periodically(email, password, period, headless)
