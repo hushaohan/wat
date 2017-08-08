@@ -121,21 +121,24 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
                       otherwise, open a gui password prompt that can be filled later.''')
 @click.option('--period', '-p', type=int, default=DEFAULT_CHECKIN_ATTEMPT_PERIOD,
               help='Checkin attempt period (in hours)')
+@click.option('--use-keyring/--no-use-keyring', default=True,
+              help='Indicate whether or not system keyring should be used for looking up/storing password.')
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
-def cli(email, password_now, period, headless):
-    password = keyring.get_password(KEYRING_SERVICE, email)
-    if password == None:
+def cli(email, password_now, period, use_keyring, headless):
+    password = keyring.get_password(KEYRING_SERVICE, email) if use_keyring else None
+    if password:
+        print('Password for {} retrieved from keyring!'.format(email))
+    else:
         if password_now:
             print('Prompting user {} to enter password now:'.format(email))
             password = getpass.getpass(prompt='Password: ', stream=None)
         else:
             print('Prompting user {} to enter password any time.'.format(email))
             password = prompt_user_for_password(email)
-        keyring.set_password(KEYRING_SERVICE, email, password)
-        print('Password for {} saved in keyring!'.format(email))
-    else:
-        print('Password for {} retrieved from keyring!'.format(email))
+        if use_keyring:
+            keyring.set_password(KEYRING_SERVICE, email, password)
+            print('Password for {} saved in keyring!'.format(email))
     check_in_periodically(email, password, period, headless)
 
 
