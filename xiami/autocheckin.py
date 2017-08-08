@@ -114,10 +114,10 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
-@click.option('--email', '-e', type=str, default='hushaohan@gmail.com',
-              help='Xiami account email address')
+@click.option('--email', '-e', type=str, required=True,
+              help='Xiami account email address (also for sending/receiving error notifications)')
 @click.option('--password-now/--no-password-now', default=True,
-              help='''If now, prompt user on cmd-line for password now (thus, should not be run in background)
+              help='''If now, prompt user on cmd-line for password (thus, should not be run in background);
                       otherwise, open a gui password prompt that can be filled later.''')
 @click.option('--period', '-p', type=int, default=6,
               help='Checkin attempt period (in hours)')
