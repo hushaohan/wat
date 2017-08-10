@@ -84,7 +84,7 @@ def check_in_periodically(email, password, period, headless):
         try:
             wd = webdriver.PhantomJS() if headless else webdriver.Firefox()
             status = login_xiami_and_attempt_check_in(wd, email, password)
-            wd.close()
+            wd.quit()
             current_time = time()
             print('{} {} {}'.format(current_time, format_time(current_time), status))
             if status == Status.SUCCESSFULLY_CHECKED_IN:
