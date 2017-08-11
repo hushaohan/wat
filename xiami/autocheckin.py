@@ -16,7 +16,7 @@ class Status(Enum):
     UNEXPECTED_ERROR_WITH_CHECKIN = auto()
     ERROR_WITH_CHECKIN = auto()
     ERROR_WITH_LOGIN = auto()
-    TIMED_OUT_DURING_LOGIN = auto()
+    PROBLEM_ACCESSING_LOGIN = auto()
     SUCCESSFULLY_CHECKED_IN = auto()
     ALREADY_CHECKED_IN = auto()
 
@@ -43,31 +43,33 @@ def wait_for_any_elements_to_load(wd, elms):
     return False
 
 
-def login_xiami_and_attempt_check_in(wd, email, password):
-    wd.get(XIAMI_LOGIN_URL)
-    wd.find_elements_by_id("J_LoginSwitch")[0].click()
-    wd.find_element_by_id('account').send_keys(email)
-    wd.find_element_by_id('pw').send_keys(password)
-    wd.find_element_by_id('submit').click()
-
+def login_xiami_and_attempt_check_in(email, password, headless):
+    wd = webdriver.PhantomJS() if headless else webdriver.Firefox()
+    status = Status.UNEXPECTED_ERROR_WITH_CHECKIN
     try:
+        wd.get(XIAMI_LOGIN_URL)
+        wd.find_elements_by_id("J_LoginSwitch")[0].click()
+        wd.find_element_by_id('account').send_keys(email)
+        wd.find_element_by_id('pw').send_keys(password)
+        wd.find_element_by_id('submit').click()
         if not wait_for_any_elements_to_load(wd, ["//b[@class='icon tosign done']", "//b[@class='icon tosign']"]):
-            return Status.ERROR_WITH_LOGIN
+            status = Status.ERROR_WITH_LOGIN
     except Exception:
-        return Status.TIMED_OUT_DURING_LOGIN
-
-    if wd.find_elements_by_xpath("//b[@class='icon tosign done']"):
-        return Status.ALREADY_CHECKED_IN
+        status = Status.PROBLEM_ACCESSING_LOGIN
     else:
-        elms_tosign = wd.find_elements_by_xpath("//b[@class='icon tosign']")
-        if len(elms_tosign) > 0:
-            elms_tosign[0].click()
-            if wait_for_any_elements_to_load(wd, ["//b[@class='icon tosign done']"]):
-                return Status.SUCCESSFULLY_CHECKED_IN
-            else:
-                return Status.ERROR_WITH_CHECKIN
+        if wd.find_elements_by_xpath("//b[@class='icon tosign done']"):
+            status = Status.ALREADY_CHECKED_IN
         else:
-            return Status.UNEXPECTED_ERROR_WITH_CHECKIN
+            elms_tosign = wd.find_elements_by_xpath("//b[@class='icon tosign']")
+            if len(elms_tosign) > 0:
+                elms_tosign[0].click()
+                if wait_for_any_elements_to_load(wd, ["//b[@class='icon tosign done']"]):
+                    status = Status.SUCCESSFULLY_CHECKED_IN
+                else:
+                    status = Status.ERROR_WITH_CHECKIN
+    finally:
+        wd.quit()
+        return status
 
 
 def format_time(t):
@@ -82,9 +84,7 @@ def check_in_periodically(email, password, period, headless):
             last_check_in_time = float(f.readlines()[0].strip())
     while True:
         try:
-            wd = webdriver.PhantomJS() if headless else webdriver.Firefox()
-            status = login_xiami_and_attempt_check_in(wd, email, password)
-            wd.quit()
+            status = login_xiami_and_attempt_check_in(email, password, headless)
             current_time = time()
             print('{} {} {}'.format(current_time, format_time(current_time), status))
             if status == Status.SUCCESSFULLY_CHECKED_IN:
