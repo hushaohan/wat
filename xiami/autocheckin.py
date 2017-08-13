@@ -53,7 +53,8 @@ def login_xiami_and_attempt_check_in(email, password, headless):
         wd.find_element_by_id('pw').send_keys(password)
         wd.find_element_by_id('submit').click()
         if not wait_for_any_elements_to_load(wd, ["//b[@class='icon tosign done']", "//b[@class='icon tosign']"]):
-            status = Status.ERROR_WITH_LOGIN
+            wd.quit()
+            return Status.ERROR_WITH_LOGIN
     except Exception:
         status = Status.PROBLEM_ACCESSING_LOGIN
     else:
