@@ -13,7 +13,6 @@ from . utils import *
 def login_and_attempt_operation(website, email, password, headless):
     wd = webdriver.PhantomJS() if headless else webdriver.Firefox()
     wd.set_window_size(1920, 1080)
-    status = Status.UNEXPECTED_ERROR
     try:
         status = website.login(wd, email, password)
         if not status == Status.OK:
@@ -61,10 +60,7 @@ def operate_periodically(website, email, password, headless, stuck_time_threshol
         sleep(3600 * period)
 
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-@click.command(context_settings=CONTEXT_SETTINGS)
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('--website-name', '-w', type=str, required=True,
               help='Website to be operated on [xiami|noip].')
 @click.option('--user-email', '-u', type=str, required=True,
@@ -85,7 +81,6 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--period', '-p', type=int, default=None,
               help='Automation operation attempt period (in hours).')
 def cli(website_name, user_email, password_now, use_keyring, headless, num_hosts, stuck_time_threshold, error_time_threshold, period):
-    WS = None
     if website_name.lower().strip() == 'xiami':
         ws = XiaMi()
         WS = XiaMi

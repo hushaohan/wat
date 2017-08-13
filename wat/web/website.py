@@ -27,18 +27,6 @@ def wait_for_any_elements(webdriver, elms):
 
 class Website(ABC):
     @property
-    def operation_status_stuck_threshold(self):
-        return self._operation_status_stuck_threshold
-
-    @property
-    def operation_error_time_threshold(self):
-        return self._operation_error_time_threshold
-
-    @property
-    def operation_attempt_period(self):
-        return self._operation_attempt_period
-
-    @property
     @abstractmethod
     def name(self):
         pass
