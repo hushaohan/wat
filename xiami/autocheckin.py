@@ -4,6 +4,7 @@ import smtplib
 import getpass
 import sys
 import keyring
+import traceback
 from datetime import datetime
 from time import time, sleep
 from selenium import webdriver
@@ -45,6 +46,7 @@ def wait_for_any_elements_to_load(wd, elms):
 
 def login_xiami_and_attempt_check_in(email, password, headless):
     wd = webdriver.PhantomJS() if headless else webdriver.Firefox()
+    wd.set_window_size(1920, 1080)
     status = Status.UNEXPECTED_ERROR_WITH_CHECKIN
     try:
         wd.get(XIAMI_LOGIN_URL)
@@ -57,6 +59,7 @@ def login_xiami_and_attempt_check_in(email, password, headless):
             return Status.ERROR_WITH_LOGIN
     except Exception:
         status = Status.PROBLEM_ACCESSING_LOGIN
+        traceback.print_exc()
     else:
         if wd.find_elements_by_xpath("//b[@class='icon tosign done']"):
             status = Status.ALREADY_CHECKED_IN
@@ -99,7 +102,8 @@ def check_in_periodically(email, password, period, headless):
                 if current_time - last_check_in_time >= CHECK_IN_ERROR_TIME_THRESHOLD:
                     send_email(email, email, 'Xiami checkin encountered error: {}'.format(status))
         except:
-            print('FATAL_ERROR: {}'.format(sys.exc_info()))
+            print('FATAL_ERROR!')
+            traceback.print_exc()
             send_email(email, email, 'Xiami checkin fatal error: {}'.format(sys.exc_info()))
         sleep(3600 * period)
 
