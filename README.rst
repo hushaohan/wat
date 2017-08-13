@@ -1,8 +1,14 @@
-=====
-Xiami
-=====
+======================
+Web Automation Toolkit
+======================
 
-Automatic xiami daily checkins.
+Automation tools for simple web accounts operations. Currently supports:
+
+- Daily XiaMi_ check-ins
+- Monthly No-IP_ free hostname refreshes
+
+.. _XiaMi: http://www.xiami.com/
+.. _No-IP: https://www.noip.com/
 
 ******************
 About Requirements
