@@ -1,6 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
+import re
 
 
 def send_email(me, you, msg_content):
@@ -23,3 +24,7 @@ def prompt_user_for_password(site_name, email):
     import tkinter.simpledialog
     tkinter.Tk().withdraw()
     return tkinter.simpledialog.askstring('Password', '{} password for {}:'.format(site_name, email), show='*')
+
+
+def is_valid_email(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)

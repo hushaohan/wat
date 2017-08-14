@@ -14,12 +14,12 @@ class Status(Enum):
     OK = auto()
 
 
-def wait_for_any_elements(webdriver, elms):
+def wait_for_any_elements(webdriver, elms_xpaths):
     rounds = 0
     while rounds < config.MAX_WEBDRIVER_LOADING_WAIT_ROUNDS:
         webdriver.implicitly_wait(config.WEBDRIVER_LOADING_WAIT_TIME)
-        for elm in elms:
-            if webdriver.find_elements_by_xpath(elm):
+        for elm_xpath in elms_xpaths:
+            if webdriver.find_elements_by_xpath(elm_xpath):
                 return True
         rounds += 1
     return False
@@ -37,7 +37,7 @@ class Website(ABC):
         pass
 
     @abstractmethod
-    def login(self, webdriver, email, password):
+    def login(self, webdriver, username, password):
         pass
 
     @abstractmethod

@@ -15,10 +15,10 @@ class XiaMi(Website):
     def operation(self):
         return 'Check-In'
 
-    def login(self, webdriver, email, password):
+    def login(self, webdriver, username, password):
         webdriver.get('https://login.xiami.com/member/login')
         webdriver.find_elements_by_id("J_LoginSwitch")[0].click()
-        webdriver.find_element_by_id('account').send_keys(email)
+        webdriver.find_element_by_id('account').send_keys(username)
         webdriver.find_element_by_id('pw').send_keys(password)
         webdriver.find_element_by_id('submit').click()
         if not wait_for_any_elements(webdriver, ["//b[@class='icon tosign done']", "//b[@class='icon tosign']"]):

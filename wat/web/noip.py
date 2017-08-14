@@ -19,9 +19,9 @@ class NoIP(Website):
     def operation(self):
         return 'Refresh'
 
-    def login(self, webdriver, email, password):
+    def login(self, webdriver, username, password):
         webdriver.get('https://www.noip.com/login')
-        webdriver.find_elements_by_css_selector('#clogs > input:nth-child(1)')[0].send_keys(email)
+        webdriver.find_elements_by_css_selector('#clogs > input:nth-child(1)')[0].send_keys(username)
         webdriver.find_elements_by_css_selector('#clogs > input:nth-child(2)')[0].send_keys(password)
         webdriver.find_elements_by_css_selector('button.span12')[0].click()
         if not wait_for_any_elements(webdriver, ["//span[contains(text(), 'Dynamic DNS')]"]):
