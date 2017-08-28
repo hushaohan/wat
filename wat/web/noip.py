@@ -5,7 +5,7 @@ class NoIP(Website):
 
     DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 25  # seconds
     DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24 * 6  # seconds
-    DEFAULT_OPERATION_ATTEMPT_PERIOD = 24 * 6  # hours
+    DEFAULT_OPERATION_ATTEMPT_PERIOD = 24  # hours
     DEFAULT_NUM_HOSTS = 3
 
     def __init__(self, num_hosts):
