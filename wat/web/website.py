@@ -25,6 +25,10 @@ def wait_for_any_elements(webdriver, elms_xpaths):
     return False
 
 
+def wait_a_bit(webdriver):
+    webdriver.implicitly_wait(config.WEBDRIVER_LOADING_WAIT_TIME)
+
+
 class Website(ABC):
     @property
     @abstractmethod

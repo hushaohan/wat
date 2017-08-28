@@ -6,10 +6,6 @@ class NoIP(Website):
     DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 25  # seconds
     DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24 * 6  # seconds
     DEFAULT_OPERATION_ATTEMPT_PERIOD = 24  # hours
-    DEFAULT_NUM_HOSTS = 3
-
-    def __init__(self, num_hosts):
-        self._num_hosts = num_hosts
 
     @property
     def name(self):
@@ -33,15 +29,16 @@ class NoIP(Website):
             return Status.OK
 
     def operate(self, webdriver):
-        if len(webdriver.find_elements_by_class_name('fa-cog')) == self._num_hosts:
-            return Status.OPERATION_UNNECESSARY
+        num_elms_refreshed = 0
+        while True:
+            elms = webdriver.find_elements_by_css_selector('tr.table-striped-row td[data-title="Action"] i.fa-refresh')
+            if len(elms) > 0:
+                elms[0].click()
+                num_elms_refreshed += 1
+                wait_a_bit(webdriver)
+            else:
+                break
+        if num_elms_refreshed > 0:
+            return Status.SUCCESSFUL_OPERATION
         else:
-            while True:
-                elms_torefresh = webdriver.find_elements_by_class_name('fa-refresh')
-                if not len(elms_torefresh) + len(webdriver.find_elements_by_class_name('fa-cog')) == self._num_hosts:
-                    return Status.ERROR_WITH_OPERATION
-                else:
-                    elms_torefresh[0].click()
-                    webdriver.implicitly_wait(WEBDRIVER_LOADING_WAIT_TIME)
-                    if len(webdriver.find_elements_by_class_name('fa-cog')) == self._num_hosts:
-                        return SUCCESSFUL_OPERATION
+            return Status.OPERATION_UNNECESSARY

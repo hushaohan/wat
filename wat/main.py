@@ -48,11 +48,11 @@ def attempt_periodically(website, username, password, email,
             elif status == Status.OPERATION_UNNECESSARY:
                 if email and current_time - last_operation_time >= stuck_time_threshold:
                     send_email(email, email,
-                        '{} {} status might be stuck!'.format(website.name, website.operation))
+                               '{} {} status might be stuck!'.format(website.name, website.operation))
             else:
                 if email and current_time - last_operation_time >= error_time_threshold:
                     send_email(email, email,
-                        '{} {} encountered error: {}'.format(website.name, website.operation, status))
+                               '{} {} encountered error: {}'.format(website.name, website.operation, status))
         except:
             print('FATAL_ERROR!')
             traceback.print_exc()
@@ -74,8 +74,6 @@ def attempt_periodically(website, username, password, email,
                       otherwise, open a gui password prompt that can be filled later.''')
 @click.option('--use-keyring/--no-use-keyring', default=True,
               help='Indicate whether or not system keyring should be used for looking up/storing password.')
-@click.option('--num-hosts', '-n', type=int, default=None,
-              help='Number of free hostnames (if No-IP free hostnames refreshing is intended).')
 @click.option('--headless/--no-headless', default=True,
               help='Indicate whether or not headless mode should be used.')
 @click.option('--stuck-time-threshold', '-s', type=int, default=None,
@@ -84,23 +82,22 @@ def attempt_periodically(website, username, password, email,
               help='Operation error time threshold (in hours) before user is notified via email.')
 @click.option('--period', '-p', type=int, default=None,
               help='Automation operation attempt period (in hours).')
-def cli(website_name, username, email, password_now, use_keyring, num_hosts,
+def cli(website_name, username, email, password_now, use_keyring,
         headless, stuck_time_threshold, error_time_threshold, period):
     if not email:
         if is_valid_email(username):
-                email = username
+            email = username
         else:
             print('No valid email provided, error notification disabled.')
 
     if website_name.lower().strip() == 'xiami':
-        ws = XiaMi()
         WS = XiaMi
     elif website_name.lower().strip() == 'noip':
-        ws = NoIP(num_hosts if num_hosts else NoIP.DEFAULT_NUM_HOSTS)
         WS = NoIP
     else:
         raise NotImplementedError
 
+    ws = WS()
     stuck_time_threshold = stuck_time_threshold if stuck_time_threshold else WS.DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD
     error_time_threshold = error_time_threshold if error_time_threshold else WS.DEFAULT_OPERATION_ERROR_TIME_THRESHOLD
     period = period if period else WS.DEFAULT_OPERATION_ATTEMPT_PERIOD
