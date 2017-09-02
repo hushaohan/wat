@@ -26,6 +26,7 @@ class NoIP(Website):
             return Status.UNEXPECTED_LANDING_PAGE
         else:
             webdriver.find_elements_by_xpath("//span[contains(text(), 'Dynamic DNS')]")[0].click()
+            wait_a_bit(webdriver)
             return Status.OK
 
     def operate(self, webdriver):
