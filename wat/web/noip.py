@@ -3,9 +3,9 @@ from . website import *
 
 class NoIP(Website):
 
-    DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 25  # seconds
-    DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24 * 6  # seconds
-    DEFAULT_OPERATION_ATTEMPT_PERIOD = 24  # hours
+    DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 20  # seconds
+    DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24  # seconds
+    DEFAULT_OPERATION_ATTEMPT_PERIOD = 6  # hours
 
     @property
     def name(self):
