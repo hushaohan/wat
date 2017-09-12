@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-import pkg_resources
+from . import web
 
-try:
-    __version__ = pkg_resources.get_distribution(__name__).version
-except:
-    __version__ = 'unknown'
+"""Top-level package for WAT."""
+
+__author__ = """Shaohan Hu"""
+
+__email__ = 'hushaohan@gmail.com'
+
+__version__ = '0.1.0'

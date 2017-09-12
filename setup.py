@@ -1,23 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Setup file for wat.
 
-    This file was generated with PyScaffold 2.5.7, a tool that easily
-    puts up a scaffold for your new Python project. Learn more under:
-    http://pyscaffold.readthedocs.org/
-"""
+"""The setup script."""
 
-import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
 
-def setup_package():
-    needs_sphinx = {'build_sphinx', 'upload_docs'}.intersection(sys.argv)
-    sphinx = ['sphinx'] if needs_sphinx else []
-    setup(setup_requires=['six', 'pyscaffold>=2.5a0,<2.6a0'] + sphinx,
-          use_pyscaffold=True)
+requirements = [
+    'click',
+    'keyring==8.7',
+    'selenium'
+]
 
-
-if __name__ == "__main__":
-    setup_package()
+setup(
+    name='wat',
+    version='0.1.0',
+    description="Web Automation Toolkit",
+    long_description=readme + '\n',
+    author="Shaohan Hu",
+    author_email='hushaohan@gmail.com',
+    url='https://github.com/hushaohan/wat',
+    python_requires='>=3.6',
+    packages=find_packages(),
+    entry_points={
+        'console_scripts': [
+            'wat=wat.main:cli'
+        ]
+    },
+    include_package_data=True,
+    install_requires=requirements,
+    license="MIT license",
+    zip_safe=False,
+    keywords='wat',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3.6',
+    ],
+)

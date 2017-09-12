@@ -1,4 +1,0 @@
-click
-# lastest keyring (10.4.0 as of writing) isn't working on osx
-keyring==8.7
-selenium
