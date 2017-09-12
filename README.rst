@@ -4,11 +4,9 @@ Web Automation Toolkit
 
 Automation tools for simple web accounts operations. Currently supports:
 
-- Daily XiaMi_ check-ins
-- Monthly No-IP_ free hostname refreshes
-
-.. _XiaMi: http://www.xiami.com/
-.. _No-IP: https://www.noip.com/
+- Daily `XiaMi <http://www.xiami.com/>`_ check-ins
+- Monthly `No-IP <https://www.noip.com/>`_ free hostname refreshes
+- Semi-automatic advancing for taking online defensive driver's course (DDC) at `New York Safety Council <https://www.newyorksafetycouncil.com/>`_
 
 ******************
 About Requirements
@@ -29,3 +27,5 @@ Use flag ``--help`` or ``-h`` for general usage help.
 For command-line password input (with flag ``--password-now``), do not start the script in background; consider using ``screen`` instead.
 
 For gui password input (with flag ``--no-password-now``), starting in background is fine.
+
+Because the DDC mode is more of a quick hack where real-time human intervention is needed every now and then, head-less mode is disabled.

@@ -5,7 +5,7 @@ class NoIP(Website):
 
     DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 20  # seconds
     DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24  # seconds
-    DEFAULT_OPERATION_ATTEMPT_PERIOD = 6  # hours
+    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 6  # seconds
 
     @property
     def name(self):
@@ -17,22 +17,34 @@ class NoIP(Website):
 
     def login(self, webdriver, username, password):
         webdriver.get('https://www.noip.com/login')
-        webdriver.find_elements_by_css_selector('#clogs > input:nth-child(1)')[0].send_keys(username)
-        webdriver.find_elements_by_css_selector('#clogs > input:nth-child(2)')[0].send_keys(password)
+        webdriver.find_elements_by_css_selector(
+            '#clogs > input:nth-child(1)'
+        )[0].send_keys(username)
+        webdriver.find_elements_by_css_selector(
+            '#clogs > input:nth-child(2)'
+        )[0].send_keys(password)
         webdriver.find_elements_by_css_selector('button.span12')[0].click()
-        if not wait_for_any_elements(webdriver, ["//span[contains(text(), 'Dynamic DNS')]"]):
+        if not wait_for_any_elements(
+            webdriver, ["//span[contains(text(), 'Dynamic DNS')]"]
+        ):
             return Status.ERROR_WITH_LOGIN
-        elif not len(webdriver.find_elements_by_xpath("//span[contains(text(), 'Dynamic DNS')]")) == 1:
+        elif not len(webdriver.find_elements_by_xpath(
+            "//span[contains(text(), 'Dynamic DNS')]"
+        )) == 1:
             return Status.UNEXPECTED_LANDING_PAGE
         else:
-            webdriver.find_elements_by_xpath("//span[contains(text(), 'Dynamic DNS')]")[0].click()
+            webdriver.find_elements_by_xpath(
+                "//span[contains(text(), 'Dynamic DNS')]"
+            )[0].click()
             wait_a_bit(webdriver)
             return Status.OK
 
     def operate(self, webdriver):
         num_elms_refreshed = 0
         while True:
-            elms = webdriver.find_elements_by_css_selector('tr.table-striped-row td[data-title="Action"] i.fa-refresh')
+            elms = webdriver.find_elements_by_css_selector(
+                'tr.table-striped-row td[data-title="Action"] i.fa-refresh'
+            )
             if len(elms) > 0:
                 elms[0].click()
                 num_elms_refreshed += 1

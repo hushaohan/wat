@@ -15,6 +15,14 @@ def send_email(me, you, msg_content):
     sender.quit()
 
 
+def deliver_notification(method, from_addr, to_addr, msg_content):
+    if method == 'beep':
+        print(msg_content)
+        print('\a')
+    elif method == 'email':
+        send_email(from_addr, to_addr, msg_content)
+
+
 def format_time(t):
     return datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
 
@@ -23,7 +31,9 @@ def prompt_user_for_password(site_name, email):
     import tkinter
     import tkinter.simpledialog
     tkinter.Tk().withdraw()
-    return tkinter.simpledialog.askstring('Password', '{} password for {}:'.format(site_name, email), show='*')
+    return tkinter.simpledialog.askstring(
+        'Password', '{} password for {}:'.format(site_name, email), show='*'
+    )
 
 
 def is_valid_email(email):
