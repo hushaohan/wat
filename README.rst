@@ -12,11 +12,11 @@ Automation tools for simple web accounts operations. Currently supports:
 About Requirements
 ******************
 
-Besides requirements.txt listing, please also make sure the following are installed:
+Please make sure the following non-python dependencies are installed:
 
-- ``Firefox``: for ``selenium``'s headful operation,
+- ``Firefox``: for ``selenium``'s headful operation (or feel free to change the code to use your preferred ``selenium`` -compatible browser),
 - ``PhantomJS``: for ``selenium``'s headless operation, and
-- ``Postbox`` (or other smtp server): for ``smtplib`` to be able to send email upon errors.
+- ``Postfix`` (or other smtp server): for ``smtplib`` to be able to send notification emails upon errors.
 
 ***********
 Usage Notes
@@ -26,6 +26,6 @@ Use flag ``--help`` or ``-h`` for general usage help.
 
 For command-line password input (with flag ``--password-now``), do not start the script in background; consider using ``screen`` instead.
 
-For gui password input (with flag ``--no-password-now``), starting in background is fine.
+For GUI password input (with flag ``--no-password-now``), starting in background is fine.
 
-Because the DDC mode is more of a quick hack where real-time human intervention is needed every now and then, head-less mode is disabled.
+Because the DDC mode is more of a quick hack where real-time human intervention is needed every now and then, unless set with ``--force``, otherwise by default it would disable ``headless`` mode, enable ``persistent_session`` mode, and set ``notification_method`` to ``beep`` (i.e. the ascii ``'\a'`` character).
