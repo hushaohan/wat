@@ -28,4 +28,10 @@ For command-line password input (with flag ``--password-now``), do not start the
 
 For GUI password input (with flag ``--no-password-now``), starting in background is fine.
 
-Because the DDC mode is more of a quick hack where real-time human intervention is needed every now and then, unless set with ``--force``, otherwise by default it would disable ``headless`` mode, enable ``persistent_session`` mode, and set ``notification_method`` to ``beep`` (i.e. the ascii ``'\a'`` character).
+Because the DDC mode is more of a quick hack where real-time human intervention is needed every now and then, the following settings will be automatically set regardless of user inputs:
+
+- ``headless`` mode: disabled
+- ``persistent_session`` mode: enabled
+- ``notification_method``: set to ``beep`` (i.e. the ascii ``'\a'`` character)
+
+The flag ``--force`` can be used to override them.
