@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum, auto
+from time import sleep
 from .. import config
 
 
@@ -17,7 +18,7 @@ class Status(Enum):
 def wait_for_any_elements(webdriver, elms_xpaths):
     rounds = 0
     while rounds < config.MAX_WEBDRIVER_LOADING_WAIT_ROUNDS:
-        webdriver.implicitly_wait(config.WEBDRIVER_LOADING_WAIT_TIME)
+        sleep(config.WEBDRIVER_LOADING_WAIT_TIME)
         for elm_xpath in elms_xpaths:
             if webdriver.find_elements_by_xpath(elm_xpath):
                 return True

@@ -27,6 +27,7 @@ class XiaMi(Website):
                 sleep(config.WEBDRIVER_LOADING_WAIT_TIME)
             else:
                 switches[0].click()
+                break
         if not switches:
             return Status.ERROR_WITH_LOGIN
         webdriver.find_element_by_id('account').send_keys(username)
