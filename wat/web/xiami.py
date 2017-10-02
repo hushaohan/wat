@@ -1,11 +1,13 @@
 from . website import *
+from .. import config
+from time import sleep
 
 
 class XiaMi(Website):
 
     DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * (24 + 6)  # seconds
     DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 12  # seconds
-    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 6  # seconds
+    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 3  # seconds
 
     @property
     def name(self):
@@ -16,8 +18,17 @@ class XiaMi(Website):
         return 'Check-In'
 
     def login(self, webdriver, username, password):
-        webdriver.get('https://login.xiami.com/member/login')
-        webdriver.find_elements_by_id("J_LoginSwitch")[0].click()
+        rounds, switches = 0, None
+        while rounds < config.MAX_WEBDRIVER_LOADING_WAIT_ROUNDS:
+            webdriver.get('https://login.xiami.com/member/login')
+            switches = webdriver.find_elements_by_id("J_LoginSwitch")
+            if not switches:
+                rounds += 1
+                sleep(config.WEBDRIVER_LOADING_WAIT_TIME)
+            else:
+                switches[0].click()
+        if not switches:
+            return Status.ERROR_WITH_LOGIN
         webdriver.find_element_by_id('account').send_keys(username)
         webdriver.find_element_by_id('pw').send_keys(password)
         webdriver.find_element_by_id('submit').click()

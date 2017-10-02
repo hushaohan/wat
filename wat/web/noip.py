@@ -1,11 +1,13 @@
 from . website import *
+from .. import config
+from time import sleep
 
 
 class NoIP(Website):
 
     DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 20  # seconds
     DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24  # seconds
-    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 6  # seconds
+    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 3  # seconds
 
     @property
     def name(self):
@@ -36,7 +38,7 @@ class NoIP(Website):
             webdriver.find_elements_by_xpath(
                 "//span[contains(text(), 'Dynamic DNS')]"
             )[0].click()
-            wait_a_bit(webdriver)
+            sleep(config.WEBDRIVER_LOADING_WAIT_TIME)
             return Status.OK
 
     def operate(self, webdriver):
