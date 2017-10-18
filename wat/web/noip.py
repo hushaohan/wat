@@ -44,9 +44,7 @@ class NoIP(Website):
     def operate(self, webdriver):
         num_elms_refreshed = 0
         while True:
-            elms = webdriver.find_elements_by_css_selector(
-                'tr.table-striped-row td[data-title="Action"] i.fa-refresh'
-            )
+            elms = webdriver.find_elements_by_class_name('btn-confirm')
             if len(elms) > 0:
                 elms[0].click()
                 num_elms_refreshed += 1
