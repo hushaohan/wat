@@ -1,4 +1,5 @@
 import smtplib
+import socket
 from email.mime.text import MIMEText
 from datetime import datetime
 import re
@@ -6,7 +7,7 @@ import re
 
 def send_email(me, you, msg_content):
     msg = MIMEText(msg_content)
-    msg['Subject'] = msg_content
+    msg['Subject'] = socket.gethostname() + ': ' + msg_content
     msg['From'] = me
     msg['To'] = you
     print('mail')
