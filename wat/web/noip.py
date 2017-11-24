@@ -6,8 +6,8 @@ from time import sleep
 class NoIP(Website):
 
     DEFAULT_OPERATION_STATUS_STUCK_THRESHOLD = 3600 * 24 * 20  # seconds
-    DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24  # seconds
-    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 3  # seconds
+    DEFAULT_OPERATION_ERROR_TIME_THRESHOLD = 3600 * 24 * 2  # seconds
+    DEFAULT_OPERATION_ATTEMPT_PERIOD = 3600 * 24  # seconds
 
     @property
     def name(self):
